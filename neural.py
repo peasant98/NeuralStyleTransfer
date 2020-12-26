@@ -546,16 +546,16 @@ def run_style_transfer(cnn,
     return input_img
 
 
-output = run_style_transfer(cnn,
-                            content_img, style_img, input_img,
-                            style_weight=250, content_weight=5)
+# output = run_style_transfer(cnn,
+#                             content_img, style_img, input_img,
+#                             style_weight=250, content_weight=5)
 
 if __name__ == '__main__':
     # generate images!
     neural_style_system = NeuralStyle()
     # get randon style+content image
     neural_style_system.get_img()
-
+    neural_style_system.plot_content_then_style()
     # select the model (by default, we select the vgg-19 model)
     neural_style_system.select_model()
 
