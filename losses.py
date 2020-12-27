@@ -3,6 +3,10 @@ import torch.nn as nn
 
 from utils import gram_matrix
 
+"""
+various types of losses used for
+training the neural style transfer model.
+"""
 
 class StyleLoss(nn.Module):
     """
