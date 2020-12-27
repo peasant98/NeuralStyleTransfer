@@ -27,7 +27,8 @@ class NeuralStyle():
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         torch.backends.cudnn.enabled = True
-        # layers to get content and style losses from
+
+        # layers in the cnn to get content and style losses from
         self.content_layers_default = ['relu4_2']
         self.style_layers_default = ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1']
 
@@ -37,7 +38,8 @@ class NeuralStyle():
         """
         # open image
         image = Image.open(image_name).convert('RGB')
-        # reszie
+        # resize
+
         if type(image_size) is not tuple:
             image_size = tuple([int((float(image_size) / max(image.size))*x) for x in (image.height, image.width)])
         Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
@@ -56,23 +58,29 @@ class NeuralStyle():
         """
         Normalize = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1])])
         bgr2rgb = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])])])
+
         output_tensor = bgr2rgb(Normalize(output_tensor.squeeze(0).cpu())) / 256
         output_tensor.clamp_(0, 1)
+
         Image2PIL = transforms.ToPILImage()
         image = Image2PIL(output_tensor.cpu())
+
         return image
 
     def select_model(self, model_selection='vgg19'):
         # models = vgg16, vgg19
         if model_selection == 'vgg19':
             self.cnn = models.vgg19(pretrained=True).features
+
             self.model_dict = {
             'conv': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4', 'conv5_1', 'conv5_2', 'conv5_3', 'conv5_4'],
             'relu': ['relu1_1', 'relu1_2', 'relu2_1', 'relu2_2', 'relu3_1', 'relu3_2', 'relu3_3', 'relu3_4', 'relu4_1', 'relu4_2', 'relu4_3', 'relu4_4', 'relu5_1', 'relu5_2', 'relu5_3', 'relu5_4'],
             'pool': ['pool1', 'pool2', 'pool3', 'pool4', 'pool5'],
             }
+
         else:
             self.cnn = models.vgg16(pretrained=True).features
+
             self.model_dict = {
             'conv': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv4_1', 'conv4_2', 'conv4_3', 'conv5_1', 'conv5_2', 'conv5_3'],
             'relu': ['relu1_1', 'relu1_2', 'relu2_1', 'relu2_2', 'relu3_1', 'relu3_2', 'relu3_3', 'relu4_1', 'relu4_2', 'relu4_3', 'relu5_1', 'relu5_2', 'relu5_3'],
@@ -103,11 +111,14 @@ class NeuralStyle():
         list_img = os.listdir(content_dir)
 
         if content_img_name is None:
+
             full_img = np.random.choice(list_img)
         else:
+
             if content_img_name not in list_img:
                 raise FileNotFoundError('Img File does not exist!')
             full_img = content_img_name
+
         full_img_string = os.path.join(content_dir, full_img)
         # style_size = size * self.style_scale
 
@@ -116,8 +127,10 @@ class NeuralStyle():
         list_style_img = os.listdir(style_dir)
 
         if style_img_name is None:
+
             style_string = np.random.choice(list_style_img)
         else:
+
             if style_img_name not in list_style_img:
                 raise FileNotFoundError('Style image does not exist!')
             style_string = style_img_name
@@ -142,14 +155,17 @@ class NeuralStyle():
                     'tolerance_change': -1,
                     'tolerance_grad': -1,
                 }
+
             self.loop_val = 1
             self.optimizer = optim.LBFGS([input_img], **optim_state)
             print('Running optimization with LBFGS (as in the paper)')
 
         else:
+
             print("Running optimization with ADAM")
             self.optimizer = optim.Adam([input_img], lr=0.01)
             self.loop_val = 1
+
         return self.optimizer, self.loop_val
 
     def run_style_transfer(self, style_weight=500, content_weight=5,
@@ -157,13 +173,16 @@ class NeuralStyle():
         """
         Run the style transfer.
         """
+
         print('Building the style transfer model..')
         self.create_white_noise()
         model, style_losses, content_losses, tv_losses = self.get_style_model_and_losses(self.model_dict,
                             self.style_img, self.content_img)
+
         self.input_img = nn.Parameter(self.input_img)
         for param in model.parameters():
             param.requires_grad = False
+
         print('Optimizing..')
         run = [0]
 
@@ -191,10 +210,13 @@ class NeuralStyle():
 
             loss.backward()
             print('iteration no.', run[0])
+
             if run[0] % 100 == 0:
+
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
+
                 os.makedirs('generated', exist_ok=True)
                 i = run[0]
                 self.deprocess(self.input_img).save(f'generated/out_{i}.png')
@@ -202,7 +224,7 @@ class NeuralStyle():
             return loss
 
         optimizer, loop_val = self.get_input_optimizer(self.input_img, iterations=iterations)
-        print(optimizer)
+
         while run[0] <= loop_val:
             optimizer.step(closure)
             # a last correction...
@@ -217,6 +239,7 @@ class NeuralStyle():
         """
         self.cnn = copy.deepcopy(self.cnn)
         self.cnn = self.cnn.to(self.device)
+
         c_idx = 0
         r_idx = 0
         p_idx = 0
@@ -239,6 +262,7 @@ class NeuralStyle():
                 i += 1
                 name = model_dict['conv'][c_idx]
                 c_idx += 1
+
             elif isinstance(layer, nn.ReLU):
                 name = model_dict['relu'][r_idx]
                 r_idx += 1
@@ -279,16 +303,23 @@ class NeuralStyle():
         # rip through the model, getting the REAL feature maps for style and content.
         for module in style_losses:
             module.mode = "capture"
+
         model(style_img)
+
         for module in style_losses:
             module.mode = "none"
+
         for module in content_losses:
             module.mode = "capture"
+
         model(content_img)
+
         for module in style_losses:
             module.mode = "loss"
+
         for module in content_losses:
             module.mode = "loss"
+
         return model, style_losses, content_losses, tv_losses
 
 
