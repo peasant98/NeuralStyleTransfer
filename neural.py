@@ -327,11 +327,14 @@ if __name__ == '__main__':
     # generate images!
     neural_style_system = NeuralStyle()
     # get randon style+content image
-    neural_style_system.get_img(content_img_name='ma3.jpg',
-                                style_img_name='flowercarrier.jpg')
+    # neural_style_system.get_img(content_img_name='ma3.jpg',
+    #                             style_img_name='flowercarrier.jpg')
+
+    neural_style_system.get_img()
+
     neural_style_system.plot_content_then_style()
 
     # select the model (by default, we select the vgg-19 model)
-    neural_style_system.select_model()
+    neural_style_system.select_model(model_selection='vgg19')
 
     neural_style_system.run_style_transfer(style_weight=1000, content_weight=5)
