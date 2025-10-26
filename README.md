@@ -24,7 +24,7 @@ python3 neural.py
 if __name__ == '__main__':
     # generate images, create the neural style object
     neural_style_system = NeuralStyle()
-    # get randon style+content image
+    # get random style+content image
     # neural_style_system.get_img(content_img_name='ma3.jpg',
     #                             style_img_name='flowercarrier.jpg')
 

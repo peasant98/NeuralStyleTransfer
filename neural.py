@@ -164,7 +164,7 @@ class NeuralStyle():
 
             print("Running optimization with ADAM")
             self.optimizer = optim.Adam([input_img], lr=0.01)
-            self.loop_val = 1
+            self.loop_val = iterations
 
         return self.optimizer, self.loop_val
 
@@ -326,7 +326,7 @@ class NeuralStyle():
 if __name__ == '__main__':
     # generate images!
     neural_style_system = NeuralStyle()
-    # get randon style+content image
+    # get random style+content image
     # neural_style_system.get_img(content_img_name='ma3.jpg',
     #                             style_img_name='flowercarrier.jpg')
 
