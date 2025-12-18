@@ -2,4 +2,4 @@ torch
 numpy
 matplotlib
 torchvision
-PIL
+pillow

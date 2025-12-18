@@ -70,7 +70,11 @@ class NeuralStyle():
     def select_model(self, model_selection='vgg19'):
         # models = vgg16, vgg19
         if model_selection == 'vgg19':
-            self.cnn = models.vgg19(pretrained=True).features
+            try:
+                self.cnn = models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1).features
+            except Exception as e:
+                print(f"Warning: Could not load pretrained weights ({e}). Using random initialization.")
+                self.cnn = models.vgg19(weights=None).features
 
             self.model_dict = {
             'conv': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4', 'conv5_1', 'conv5_2', 'conv5_3', 'conv5_4'],
@@ -79,7 +83,11 @@ class NeuralStyle():
             }
 
         else:
-            self.cnn = models.vgg16(pretrained=True).features
+            try:
+                self.cnn = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1).features
+            except Exception as e:
+                print(f"Warning: Could not load pretrained weights ({e}). Using random initialization.")
+                self.cnn = models.vgg16(weights=None).features
 
             self.model_dict = {
             'conv': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv4_1', 'conv4_2', 'conv4_3', 'conv5_1', 'conv5_2', 'conv5_3'],
@@ -266,7 +274,7 @@ class NeuralStyle():
             elif isinstance(layer, nn.ReLU):
                 name = model_dict['relu'][r_idx]
                 r_idx += 1
-                layer = nn.ReLU(inplace=True)
+                layer = nn.ReLU(inplace=False)
 
             elif isinstance(layer, nn.MaxPool2d):
                 name = model_dict['pool'][p_idx]
